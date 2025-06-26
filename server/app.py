@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
-from flask_restful import Api, Resource
-from flask_cors import CORS  
+from flask_restful import Api, Resource  
 
 from models import db, Plant
 
-app = Flask(__name__)
-CORS(app)  
-
+app = Flask(__name__)  
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///plants.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
@@ -40,10 +37,14 @@ class Plants(Resource):
 class PlantByID(Resource):
 
     def patch(self, id):
-        plant = Plant.query.get(id)
+        plant = Plant.query.filter_by(id=id).first()
         if not plant:
             return make_response(jsonify({"error": "Plant not found"}), 404)
-
+        return make_response(jsonify(plant.to_dict()), 200)
+    def patch(self, id):
+        plant = plant.query.get(id)
+        if not plant:
+            return make_response(jsonify({"error": "plant not found"}), 404)
         data = request.get_json()
         if "is_in_stock" in data:
             plant.is_in_stock = data["is_in_stock"]
@@ -61,7 +62,6 @@ class PlantByID(Resource):
         return '', 204
 
 
-api.add_resource(Plants, '/plants')
 api.add_resource(PlantByID, '/plants/<int:id>')
 
 
